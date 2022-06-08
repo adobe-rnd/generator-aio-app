@@ -11,6 +11,7 @@ governing permissions and limitations under the License.
 
 const path = require('path')
 const Generator = require('yeoman-generator')
+const GeneratorAioFranklin = require('generator-aio-franklin')
 
 const { isLoopingPrompts, runtimeManifestKey } = require('../../lib/constants')
 const utils = require('../../lib/utils')
@@ -53,7 +54,7 @@ class Application extends Generator {
   }
 
   async composeWithAddGenerators () {
-    let components = ['actions', 'events', 'webAssets'] // defaults when skip prompt
+    let components = ['actions', 'events', 'webAssets', 'franklin'] // defaults when skip prompt
     if (!this.options['skip-prompt']) {
       const res = await this.prompt([
         {
@@ -76,6 +77,11 @@ class Application extends Generator {
               name: 'Web Assets: Deploy hosted static assets',
               value: 'webAssets',
               checked: true
+            },
+            {
+              name: 'Franklin: AEM Sites',
+              value: 'franklin',
+              checked: false
             }
           ],
           validate: utils.atLeastOne
@@ -86,6 +92,7 @@ class Application extends Generator {
     const addActions = components.includes('actions')
     const addEvents = components.includes('events')
     const addWebAssets = components.includes('webAssets')
+    const addFranklin = components.includes('franklin')
 
     // TODO cleanup unecessary params in all generators
     // run add action and add ui generators when applicable
@@ -115,6 +122,15 @@ class Application extends Generator {
         'project-name': this.options['project-name'],
         'web-src-folder': this.webSrcFolder,
         'config-path': this.configPath
+      })
+    }
+    if (addFranklin) {
+      this.composeWith({
+        Generator: GeneratorAioFranklin,
+        path: 'generator-aio-franklin'
+      }, {
+        'skip-prompt': this.options['skip-prompt'],
+        'add-actions': addActions
       })
     }
   }
